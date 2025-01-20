@@ -1,10 +1,11 @@
-import mongoose, { disconnect } from 'mongoose';
+import mongoose from 'mongoose';
 
 const productSchema = new mongoose.Schema(
   {
     name: {
       type: String,
       required: [true, 'Enter product name'],
+      trim: true,
     },
     image: {
       type: [String],
@@ -13,18 +14,19 @@ const productSchema = new mongoose.Schema(
     category: [
       {
         type: mongoose.Schema.ObjectId,
-        ref: 'category',
+        ref: 'Category',
       },
     ],
     subCategory: [
       {
         type: mongoose.Schema.ObjectId,
-        ref: 'subCategory',
+        ref: 'SubCategory',
       },
     ],
     unit: {
       type: String,
       default: null,
+      trim: true,
     },
     stock: {
       type: Number,
@@ -50,6 +52,7 @@ const productSchema = new mongoose.Schema(
     description: {
       type: String,
       default: null,
+      trim: true,
     },
     more_details: {
       type: Object,

@@ -5,6 +5,7 @@ const subCategorySchema = new mongoose.Schema(
     name: {
       type: String,
       required: [true, 'Enter subcategory name'],
+      trim: true,
     },
     image: {
       type: String,
@@ -13,7 +14,7 @@ const subCategorySchema = new mongoose.Schema(
     category: [
       {
         type: mongoose.Schema.ObjectId,
-        ref: 'category',
+        ref: 'Category',
       },
     ],
   },

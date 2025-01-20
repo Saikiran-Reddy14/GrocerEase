@@ -4,12 +4,14 @@ const categorySchema = new mongoose.Schema(
   {
     name: {
       type: String,
-      default: null,
       required: [true, 'Enter category name'],
+      default: null,
+      trim: true,
     },
     image: {
       type: String,
       default: null,
+      trim: true,
     },
   },
   { timestamps: true }

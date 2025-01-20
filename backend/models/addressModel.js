@@ -5,14 +5,17 @@ const addressSchema = new mongoose.Schema(
     address_line: {
       type: String,
       required: [true, 'Enter address'],
+      trim: true,
     },
     city: {
       type: String,
       required: [true, 'Enter city'],
+      trim: true,
     },
     state: {
       type: String,
       required: [true, 'Enter state'],
+      trim: true,
     },
     pincode: {
       type: String,
@@ -27,6 +30,7 @@ const addressSchema = new mongoose.Schema(
     country: {
       type: String,
       required: [true, 'Enter country'],
+      trim: true,
     },
     mobile: {
       type: String,

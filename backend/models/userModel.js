@@ -1,4 +1,3 @@
-import { verify } from 'jsonwebtoken';
 import mongoose from 'mongoose';
 
 const userSchema = new mongoose.Schema(
@@ -6,11 +5,13 @@ const userSchema = new mongoose.Schema(
     name: {
       type: String,
       required: [true, 'Please provide a name'],
+      trim: true,
     },
     email: {
       type: String,
       required: [true, 'Please provide email'],
       unique: true,
+      trim: true,
     },
     password: {
       type: String,
@@ -21,6 +22,7 @@ const userSchema = new mongoose.Schema(
     avatar: {
       type: String,
       default: '',
+      trim: true,
     },
     mobile: {
       type: Number,
@@ -29,6 +31,7 @@ const userSchema = new mongoose.Schema(
     refresh_token: {
       type: String,
       default: '',
+      trim: true,
     },
     verify_Email: {
       type: Boolean,
@@ -46,24 +49,25 @@ const userSchema = new mongoose.Schema(
     address_details: [
       {
         type: mongoose.Schema.ObjectId,
-        ref: 'address',
+        ref: 'Address',
       },
     ],
     shopping_cart: [
       {
         type: mongoose.Schema.ObjectId,
-        ref: 'cartProduct',
+        ref: 'CartProduct',
       },
     ],
     orderHistory: [
       {
         type: mongoose.Schema.ObjectId,
-        ref: 'order',
+        ref: 'Order',
       },
     ],
     forgot_password_otp: {
       type: String,
       default: null,
+      trim: true,
     },
     forgot_password_expiry: {
       type: Date,
