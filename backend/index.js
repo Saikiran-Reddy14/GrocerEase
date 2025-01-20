@@ -4,6 +4,8 @@ import cookieParser from 'cookie-parser';
 import morgan from 'morgan';
 import helmet from 'helmet';
 import dotenv from 'dotenv';
+import { connectDB } from './config/connectDB.js';
+
 dotenv.config();
 const app = express();
 
@@ -20,6 +22,8 @@ app.use(morgan());
 app.use(helmet({}));
 
 const PORT = process.env.PORT || 8000;
+
+connectDB();
 
 app.get('/', (req, res) => {
   res.send('Ok');
