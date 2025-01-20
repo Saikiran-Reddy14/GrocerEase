@@ -42,6 +42,10 @@ const addressSchema = new mongoose.Schema(
         message: 'Mobile number must be a 10-digit number',
       },
     },
+    status: {
+      type: Boolean,
+      default: true,
+    },
   },
   { timestamps: true }
 );
