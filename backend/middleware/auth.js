@@ -1,4 +1,6 @@
-const auth = (req, res, next) => {
+import jwt from 'jsonwebtoken';
+
+const auth = async (req, res, next) => {
   try {
     // Get token from cookies or authorization header
     const token =
@@ -12,6 +14,10 @@ const auth = (req, res, next) => {
         success: false,
       });
     }
+
+    const decode = await jwt.verify(token, process.env.SECRET_KEY_ACCESS_TOKEN);
+
+    req.userId = decode.id;
 
     next(); // Proceed to the next middleware/handler
   } catch (error) {
