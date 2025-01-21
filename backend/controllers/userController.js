@@ -189,3 +189,29 @@ export const loginUser = async (req, res) => {
     });
   }
 };
+
+// Logout Controller
+export const logoutUser = async (req, res) => {
+  try {
+    const cookieOptions = {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'None',
+    };
+
+    res.clearCookie('accessToken', cookieOptions);
+    res.clearCookie('refreshToken', cookieOptions);
+
+    return res.status(200).json({
+      message: 'User logged out',
+      success: true,
+      error: false,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error?.message || error,
+      error: true,
+      success: false,
+    });
+  }
+};
