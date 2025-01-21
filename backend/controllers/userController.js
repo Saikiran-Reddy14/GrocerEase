@@ -1,5 +1,7 @@
+import sendEmail from '../config/sendEmail.js';
 import UserModel from '../models/userModel.js';
 import bcryptjs from 'bcryptjs';
+import verifyEmailTemplate from '../utils/verifyEmailTemplate.js';
 
 export const registerUser = async (req, res) => {
   try {
@@ -29,6 +31,17 @@ export const registerUser = async (req, res) => {
       password: hashedPassword,
     });
     await newUser.save();
+
+    const verifyEmailUrl = `${process.env.FRONTEND_URL}/verify-email?code=${newUser?._id}`;
+
+    const verifyEmail = await sendEmail({
+      sendTo: email,
+      subject: 'Verification email from GrocerEase',
+      html: verifyEmailTemplate({
+        name,
+        url: verifyEmailUrl,
+      }),
+    });
 
     res.status(201).json({
       message: 'User registered successfully',
