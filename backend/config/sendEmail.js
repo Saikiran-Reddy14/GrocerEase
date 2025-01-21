@@ -1,6 +1,13 @@
 import { Resend } from 'resend';
+import dotenv from 'dotenv';
+dotenv.config();
 
-const resend = new Resend(process.env.RESEND_API);
+const resendApiKey = process.env.RESEND_API;
+if (!resendApiKey) {
+  throw new Error('RESEND_API key is missing!');
+}
+
+const resend = new Resend(resendApiKey);
 
 const sendEmail = async ({ sendTo, subject, html }) => {
   try {
