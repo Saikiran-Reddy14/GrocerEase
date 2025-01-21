@@ -2,7 +2,10 @@ import sendEmail from '../config/sendEmail.js';
 import UserModel from '../models/userModel.js';
 import bcryptjs from 'bcryptjs';
 import verifyEmailTemplate from '../utils/verifyEmailTemplate.js';
+import generateAccessToken from '../utils/generateAccessToken.js';
+import generateRefreshToken from '../utils/generateRefreshToken.js';
 
+// User Register Controller
 export const registerUser = async (req, res) => {
   try {
     const { name, email, password } = req.body;
@@ -58,6 +61,7 @@ export const registerUser = async (req, res) => {
   }
 };
 
+// Email Verification Controller
 export const verifyEmailController = async (req, res) => {
   try {
     const { code } = req.query;
@@ -106,6 +110,66 @@ export const verifyEmailController = async (req, res) => {
 
     return res.status(200).json({
       message: 'Email successfully verified',
+      success: true,
+      error: false,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error?.message || 'Internal Server Error',
+      error: true,
+      success: false,
+    });
+  }
+};
+
+// Login Controller
+export const loginUser = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    const user = await UserModel.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        message: 'User does not exist',
+        error: true,
+        success: false,
+      });
+    }
+
+    if (user.status !== 'Active') {
+      return res.status(403).json({
+        message: 'Account is inactive or suspended. Contact Admin',
+        error: true,
+        success: false,
+      });
+    }
+
+    const result = await bcryptjs.compare(password, user.password);
+
+    if (!result) {
+      return res.status(401).json({
+        message: 'Invalid password',
+        error: true,
+        success: false,
+      });
+    }
+
+    const accessToken = await generateAccessToken(user._id);
+    const refreshToken = await generateRefreshToken(user._id);
+
+    const cookieOptions = {
+      httpOnly: true,
+      secure: false,
+      sameSite: 'None',
+    };
+    res.cookie('accessToken', accessToken, cookieOptions);
+    res.cookie('refreshToken', refreshToken, cookieOptions);
+
+    res.status(200).json({
+      message: 'User logged in successfully',
+      data: {
+        accessToken,
+        refreshToken,
+      },
       success: true,
       error: false,
     });
