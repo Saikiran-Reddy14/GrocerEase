@@ -198,9 +198,13 @@ export const logoutUser = async (req, res) => {
       secure: false,
       sameSite: 'None',
     };
-
+    const userId = req.userId;
     res.clearCookie('accessToken', cookieOptions);
     res.clearCookie('refreshToken', cookieOptions);
+
+    const removeRefreshToken = await UserModel.findByIdAndUpdate(userId, {
+      $set: { refresh_token: '' },
+    });
 
     return res.status(200).json({
       message: 'User logged out',
