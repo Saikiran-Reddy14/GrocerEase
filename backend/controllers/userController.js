@@ -57,3 +57,63 @@ export const registerUser = async (req, res) => {
     });
   }
 };
+
+export const verifyEmailController = async (req, res) => {
+  try {
+    const { code } = req.query;
+
+    if (!code) {
+      return res.status(400).json({
+        message: 'Verification code is required',
+        error: true,
+        success: false,
+      });
+    }
+
+    const user = await UserModel.findById(code);
+
+    if (!user) {
+      return res.status(404).json({
+        message: 'Invalid or expired verification link',
+        error: true,
+        success: false,
+      });
+    }
+
+    // Check if already verified
+    if (user.verify_Email) {
+      return res.status(400).json({
+        message: 'Email already verified',
+        error: true,
+        success: false,
+      });
+    }
+
+    // Update user status to verified
+    const result = await UserModel.updateOne(
+      { _id: code },
+      { $set: { verify_Email: true } }
+    );
+
+    // Check the result of update operation
+    if (result.acknowledged && result.modifiedCount === 0) {
+      return res.status(400).json({
+        message: 'Error verifying email. It may already be verified.',
+        error: true,
+        success: false,
+      });
+    }
+
+    return res.status(200).json({
+      message: 'Email successfully verified',
+      success: true,
+      error: false,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error?.message || 'Internal Server Error',
+      error: true,
+      success: false,
+    });
+  }
+};
