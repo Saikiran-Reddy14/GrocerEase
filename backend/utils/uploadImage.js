@@ -9,22 +9,27 @@ cloudinary.config({
 });
 
 const uploadImage = async (image) => {
-  const buffer = image?.Buffer || Buffer.from(await image.arrayBuffer());
+  try {
+    const buffer = image.buffer;
 
-  const upload_Image = await new Promise((resolve, reject) => {
-    cloudinary.uploader
-      .upload_stream(
-        {
-          folder: 'grocerease',
-        },
-        (err, uploadResult) => {
-          return resolve(uploadResult);
-        }
-      )
-      .end(buffer);
-  });
+    const upload_Image = await new Promise((resolve, reject) => {
+      cloudinary.uploader
+        .upload_stream(
+          {
+            folder: 'grocerease',
+          },
+          (err, uploadResult) => {
+            if (err) return reject(err);
+            return resolve(uploadResult);
+          }
+        )
+        .end(buffer);
+    });
 
-  return upload_Image;
+    return upload_Image;
+  } catch (error) {
+    throw new Error(`Image upload failed: ${error.message}`);
+  }
 };
 
 export default uploadImage;
