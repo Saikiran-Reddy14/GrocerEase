@@ -4,6 +4,7 @@ import bcryptjs from 'bcryptjs';
 import verifyEmailTemplate from '../utils/verifyEmailTemplate.js';
 import generateAccessToken from '../utils/generateAccessToken.js';
 import generateRefreshToken from '../utils/generateRefreshToken.js';
+import uploadImage from '../utils/uploadImage.js';
 
 // User Register Controller
 export const registerUser = async (req, res) => {
@@ -214,6 +215,44 @@ export const logoutUser = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       message: error?.message || error,
+      error: true,
+      success: false,
+    });
+  }
+};
+
+// Upload User Avatar
+export const uploadAvatar = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const image = req.file;
+
+    if (!image) {
+      return res.status(400).json({
+        message: 'No image file uploaded',
+        error: true,
+        success: false,
+      });
+    }
+
+    const upload = await uploadImage(image);
+
+    const updateUserAvatar = await UserModel.findByIdAndUpdate(userId, {
+      $set: { avatar: upload.url },
+    });
+
+    return res.status(200).json({
+      message: 'Avatar uploaded successfully',
+      data: {
+        _id: userId,
+        avatar: upload.url,
+      },
+      success: true,
+      error: false,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error?.message || 'Internal Server Error',
       error: true,
       success: false,
     });
