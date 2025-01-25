@@ -3,6 +3,7 @@ import {
   loginUser,
   logoutUser,
   registerUser,
+  updateUserDetails,
   uploadAvatar,
   verifyEmailController,
 } from '../controllers/userController.js';
@@ -16,5 +17,6 @@ userRouter.post('/verify-email', verifyEmailController);
 userRouter.post('/login', loginUser);
 userRouter.post('/logout', auth, logoutUser);
 userRouter.put('/upload-avatar', auth, upload.single('avatar'), uploadAvatar);
+userRouter.put('/update-user', auth, updateUserDetails);
 
 export default userRouter;
