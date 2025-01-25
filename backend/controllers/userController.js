@@ -258,3 +258,71 @@ export const uploadAvatar = async (req, res) => {
     });
   }
 };
+
+// Update User Details
+export const updateUserDetails = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const user = await UserModel.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        message: 'User not found',
+        error: true,
+        success: false,
+      });
+    }
+
+    const updatedData = {};
+
+    // Compare fields and update only if they are different
+    if (req.body.password) {
+      const isPasswordMatch = await bcryptjs.compare(
+        req.body.password,
+        user.password
+      );
+      if (!isPasswordMatch) {
+        const hashedPassword = await bcryptjs.hash(req.body.password, 12);
+        updatedData.password = hashedPassword;
+      }
+    }
+
+    if (req.body.name && req.body.name !== user.name) {
+      updatedData.name = req.body.name;
+    }
+    if (req.body.email && req.body.email !== user.email) {
+      updatedData.email = req.body.email;
+    }
+    if (req.body.mobile && req.body.mobile !== user.mobile) {
+      updatedData.mobile = req.body.mobile;
+    }
+
+    // If no fields are updated, return a message
+    if (Object.keys(updatedData).length === 0) {
+      return res.status(400).json({
+        message: 'No changes detected to update',
+        error: true,
+        success: false,
+      });
+    }
+
+    const updatedUser = await UserModel.updateOne(
+      { _id: userId },
+      { $set: updatedData },
+      { new: true }
+    );
+
+    return res.status(200).json({
+      message: 'User details updated successfully',
+      error: false,
+      success: true,
+      data: updatedUser,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: error?.message || 'Internal Server Error',
+      error: true,
+      success: false,
+    });
+  }
+};
