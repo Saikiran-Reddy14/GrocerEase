@@ -5,6 +5,8 @@ import verifyEmailTemplate from '../utils/verifyEmailTemplate.js';
 import generateAccessToken from '../utils/generateAccessToken.js';
 import generateRefreshToken from '../utils/generateRefreshToken.js';
 import uploadImage from '../utils/uploadImage.js';
+import generateOtp from '../utils/generateOtp.js';
+import forgotPasswordTemplate from '../utils/forgotPasswordTemplate.js';
 
 // User Register Controller
 export const registerUser = async (req, res) => {
@@ -321,6 +323,67 @@ export const updateUserDetails = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       message: error?.message || 'Internal Server Error',
+      error: true,
+      success: false,
+    });
+  }
+};
+
+// Forgot Password
+export const forgotPassword = async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email) {
+      return res.status(400).json({
+        message: 'Please provide your registered email address.',
+        error: true,
+        success: false,
+      });
+    }
+
+    const userExist = await UserModel.findOne({ email });
+    if (!userExist) {
+      return res.status(400).json({
+        message:
+          'We could not find an account associated with this email address.',
+        error: true,
+        success: false,
+      });
+    }
+
+    const otp = generateOtp();
+    const expireTime = new Date(Date.now() + 60 * 60 * 1000);
+
+    const updatedData = await UserModel.findByIdAndUpdate(
+      userExist._id,
+      {
+        $set: {
+          forgot_password_otp: otp,
+          forgot_password_expiry: new Date(expireTime).toISOString(),
+        },
+      },
+      { new: true }
+    );
+
+    await sendEmail({
+      sendTo: email,
+      subject: 'Password Reset Request from GrocerEase',
+      html: forgotPasswordTemplate({
+        name: userExist.name,
+        otp,
+      }),
+    });
+
+    return res.json({
+      message:
+        'A one-time password (OTP) has been sent to your email. Please check your inbox to proceed.',
+      error: false,
+      success: true,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message:
+        'Something went wrong while processing your request. Please try again later.',
       error: true,
       success: false,
     });
