@@ -383,6 +383,67 @@ export const forgotPassword = async (req, res) => {
   } catch (error) {
     return res.status(500).json({
       message:
+        error?.message ||
+        'Something went wrong while processing your request. Please try again later.',
+      error: true,
+      success: false,
+    });
+  }
+};
+
+// Verify Otp
+export const verifyOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      return res.status(400).json({
+        message: 'Please provide both your registered email address and OTP.',
+        error: true,
+        success: false,
+      });
+    }
+
+    const userExist = await UserModel.findOne({ email });
+    if (!userExist) {
+      return res.status(400).json({
+        message:
+          'No account found with the provided email address. Please check and try again.',
+        error: true,
+        success: false,
+      });
+    }
+
+    const currentTime = new Date();
+
+    // if otp has expired
+    if (new Date(userExist.forgot_password_expiry) < currentTime) {
+      return res.status(400).json({
+        message: 'Your OTP has expired.',
+        error: true,
+        success: false,
+      });
+    }
+
+    // wrong otp
+    if (otp !== userExist.forgot_password_otp) {
+      return res.status(400).json({
+        message: 'The OTP you entered is incorrect. Please try again.',
+        error: true,
+        success: false,
+      });
+    }
+
+    // otp is correct and not expired
+    return res.status().json({
+      message:
+        'Your OTP has been successfully verified. You can now reset your password.',
+      success: true,
+      error: false,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message:
+        error?.message ||
         'Something went wrong while processing your request. Please try again later.',
       error: true,
       success: false,
