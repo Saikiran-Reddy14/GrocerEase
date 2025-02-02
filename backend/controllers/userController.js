@@ -1,6 +1,7 @@
 import sendEmail from '../config/sendEmail.js';
 import UserModel from '../models/userModel.js';
 import bcryptjs from 'bcryptjs';
+import jwt from 'jsonwebtoken';
 import verifyEmailTemplate from '../utils/verifyEmailTemplate.js';
 import generateAccessToken from '../utils/generateAccessToken.js';
 import generateRefreshToken from '../utils/generateRefreshToken.js';
@@ -495,6 +496,66 @@ export const resetPassword = async (req, res) => {
       message: 'Password updated successfully.',
       success: true,
       error: false,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message:
+        error?.message ||
+        'An unexpected error occurred. Please try again later.',
+      error: true,
+      success: false,
+    });
+  }
+};
+
+// Refresh Token
+export const refreshToken = async (req, res) => {
+  try {
+    const refreshToken =
+      req?.cookies?.refreshToken || req.headers?.authorization?.split(' ')[1];
+
+    if (!refreshToken) {
+      return res.status(401).json({
+        message: 'Token is missing. Please authenticate again.',
+        error: true,
+        success: false,
+      });
+    }
+
+    let verifyToken;
+    try {
+      verifyToken = jwt.verify(
+        refreshToken,
+        process.env.SECRET_KEY_ACCESS_TOKEN
+      );
+    } catch (err) {
+      return res.status(403).json({
+        message: 'Invalid or expired refresh token.',
+        error: true,
+        success: false,
+      });
+    }
+
+    const userId = verifyToken?.id;
+
+    // Generate a new access token
+    const newAccessToken = await generateAccessToken(userId);
+
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'None',
+    };
+
+    res.cookie('accessToken', newAccessToken, cookieOptions);
+
+    return res.status(200).json({
+      message: 'New access token generated successfully.',
+      error: false,
+      success: true,
+      data: {
+        accessToken: newAccessToken,
+      },
     });
   } catch (error) {
     return res.status(500).json({
