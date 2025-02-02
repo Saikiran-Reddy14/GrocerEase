@@ -450,3 +450,59 @@ export const verifyOtp = async (req, res) => {
     });
   }
 };
+
+// Reset Password
+export const resetPassword = async (req, res) => {
+  try {
+    const { email, newPassword, confirmPassword } = req.body;
+
+    if (!email || !newPassword || !confirmPassword) {
+      return res.status(400).json({
+        message:
+          'Please provide an email, a new password, and confirm the password.',
+        error: true,
+        success: false,
+      });
+    }
+
+    // Check if the user exists with the provided email
+    const user = await UserModel.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({
+        message: 'User not found with the provided email.',
+        error: true,
+        success: false,
+      });
+    }
+
+    // check if the new password and confirm password match
+    if (newPassword !== confirmPassword) {
+      return res.status(400).json({
+        message: 'New password and confirm password must match.',
+        error: true,
+        success: false,
+      });
+    }
+
+    await UserModel.findByIdAndUpdate(
+      user._id,
+      { $set: { password: await bcryptjs.hash(newPassword, 12) } },
+      { new: true }
+    );
+
+    return res.status(200).json({
+      message: 'Password updated successfully.',
+      success: true,
+      error: false,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message:
+        error?.message ||
+        'An unexpected error occurred. Please try again later.',
+      error: true,
+      success: false,
+    });
+  }
+};
