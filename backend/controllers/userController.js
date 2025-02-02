@@ -424,8 +424,8 @@ export const verifyOtp = async (req, res) => {
       });
     }
 
-    // wrong otp
-    if (otp !== userExist.forgot_password_otp) {
+    // Check if the OTP matches
+    if (String(otp) !== String(userExist.forgot_password_otp)) {
       return res.status(400).json({
         message: 'The OTP you entered is incorrect. Please try again.',
         error: true,
@@ -433,8 +433,8 @@ export const verifyOtp = async (req, res) => {
       });
     }
 
-    // otp is correct and not expired
-    return res.status().json({
+    // OTP is correct and not expired
+    return res.status(200).json({
       message:
         'Your OTP has been successfully verified. You can now reset your password.',
       success: true,
